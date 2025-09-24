@@ -23,7 +23,16 @@ class Video(models.Model):
             return f'https://www.youtube.com/embed/{video_id}'
         # Retorna a URL original se não for o formato esperado, para outros tipos de vídeo
         return self.video_url
-
+    @property
+    def thumbnail_url(self):
+        """
+        Gera a URL da imagem de capa (thumbnail) de alta qualidade do YouTube.
+        """
+        if 'watch?v=' in self.video_url:
+            video_id = self.video_url.split('v=')[-1].split('&')[0]
+            return f'https://img.youtube.com/vi/{video_id}/hqdefault.jpg'
+        # Retorna uma string vazia ou uma imagem padrão se não for um link do YouTube
+        return ''
 # Modelo para as Perguntas do quiz
 class Question(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="questions", verbose_name="Vídeo")
