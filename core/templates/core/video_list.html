@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Vídeos Disponíveis - Immerse{% endblock %}
+
+{% block content %}
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center">
+        <div class="container-fluid py-4">
+            <h1 class="display-5 fw-bold">Aprenda Inglês por Imersão</h1>
+            <p class="fs-4">Explore nossa coleção de vídeos selecionados para aprimorar sua audição, vocabulário e fluência de forma natural e divertida.</p>
+        </div>
+    </div>
+
+    {% if featured_video %}
+        <div class="container px-4 py-5" id="featured-video">
+            <h2 class="pb-2 border-bottom">Vídeo em Destaque</h2>
+            <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+                <div class="col-12 col-lg-6">
+                    <div class="ratio ratio-16x9 shadow-lg rounded">
+                        <iframe src="{{ featured_video.embed_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h3 class="fw-bold lh-1 mb-3">{{ featured_video.title }}</h3>
+                    <p class="lead">{{ featured_video.description|truncatechars:250 }}</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a href="{% url 'video_detail' featured_video.pk %}" class="btn btn-primary btn-lg px-4 me-md-2">Assistir e Praticar &raquo;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="container px-4 py-5" id="all-videos">
+        <h2 class="pb-2 border-bottom">Todos os Vídeos</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+            {% for video in videos %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ video.title }}</h5>
+                            <p class="card-text text-muted flex-grow-1">{{ video.description|truncatechars:100 }}</p>
+                            <a href="{% url 'video_detail' video.pk %}" class="btn btn-outline-primary mt-auto">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
