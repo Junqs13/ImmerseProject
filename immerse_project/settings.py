@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-eni3-$mv4+&s3^y#@oa0**31k)c4v=-caw1!!bgw%o5yne=td@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['seu-usuario.pythonanywhere.com', '127.0.0.1']
+ALLOWED_HOSTS = ['junqs13.pythonanywhere.com', '127.0.0.1']
 
 
 # Application definition
@@ -78,10 +78,10 @@ WSGI_APPLICATION = 'immerse_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'immerse_db',         # O nome exato do banco que criamos.
-        'USER': 'root',               # O usuário do seu MySQL.
-        'PASSWORD': '',               # A senha. Deixe em branco se usa o XAMPP padrão.
-        'HOST': 'localhost',          # Geralmente não precisa mudar.
+        'NAME': 'Junqs13$default',         # O nome exato do banco que criamos.
+        'USER': 'Junqs13',               # O usuário do seu MySQL.
+        'PASSWORD': 'A97254911b',               # A senha. Deixe em branco se usa o XAMPP padrão.
+        'HOST': 'Junqs13.mysql.pythonanywhere-services.com',          # Geralmente não precisa mudar.
         'PORT': '3306',               # Geralmente não precisa mudar.
     }
 }
