@@ -1,0 +1,51 @@
+:root {
+    --cor-fundo-principal: #f8f9fa;
+    --cor-texto-principal: #212529;
+    --cor-fundo-card: #ffffff;
+    --cor-borda: #dee2e6;
+}
+html.dark-mode {
+    --cor-fundo-principal: #212529;
+    --cor-texto-principal: #f8f9fa;
+    --cor-fundo-card: #343a40;
+    --cor-borda: #495057;
+}
+body {
+    background-color: var(--cor-fundo-principal);
+    color: var(--cor-texto-principal);
+    transition: background-color 0.3s, color 0.3s;
+}
+.card, .list-group-item, .alert, .bg-light {
+    background-color: var(--cor-fundo-card) !important;
+    color: var(--cor-texto-principal);
+    border-color: var(--cor-borda);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.list-group-item {
+    border-bottom-color: var(--cor-borda);
+}
+.card {
+    transition: transform .2s ease-in-out, box-shadow .2s ease-in-out, background-color 0.3s;
+}
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+html.dark-mode .text-muted {
+    color: #adb5bd !important; /* Um tom de cinza claro padrão do Bootstrap */
+}
+/* Estilos para os ícones de feedback do quiz */
+.feedback-icon {
+    margin-left: 8px; /* Adiciona um pequeno espaço à esquerda do ícone */
+    font-size: 1.2rem;   /* Aumenta um pouco o tamanho do ícone */
+    vertical-align: middle; /* Alinha o ícone com o meio do texto */
+}
+
+.icon-correct {
+    color: #198754; /* Verde padrão do Bootstrap (success) */
+}
+
+.icon-incorrect {
+    color: #DC3545; /* Vermelho padrão do Bootstrap (danger) */
+}

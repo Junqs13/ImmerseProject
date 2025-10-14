@@ -3,90 +3,174 @@
 {% block title %}Aprenda Inglês por Imersão - Immerse{% endblock %}
 
 {% block content %}
-    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center">
-        <div class="container-fluid py-4">
-            <h1 class="display-5 fw-bold">Aprenda Inglês por Imersão</h1>
-            <p class="fs-4">Explore nossa coleção de vídeos selecionados para aprimorar sua audição, vocabulário e fluência de forma natural e divertida.</p>
+    {% if is_homepage %}
+        <div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center" data-aos="fade-in">
+            <div class="container-fluid py-4">
+                <h1 class="display-5 fw-bold">Aprenda Inglês por Imersão</h1>
+                <p class="fs-4">Explore nossa coleção de vídeos selecionados para aprimorar sua audição, vocabulário e fluência de forma natural e divertida.</p>
+            </div>
         </div>
-    </div>
 
-    <div class="container px-4 py-5" id="how-it-works">
-        <h2 class="pb-2 border-bottom text-center">Como Usar a Plataforma</h2>
-        <div class="row g-4 py-5 row-cols-1 row-cols-md-2 row-cols-lg-4">
-            <div class="col text-center">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <i class="bi bi-search fs-1 text-primary"></i>
-                        <h3 class="fs-4 mt-3">1. Explore</h3>
-                        <p>Navegue pelo nosso catálogo e escolha um vídeo com um tema que te interesse. O aprendizado é mais eficaz quando o conteúdo é relevante para você.</p>
+        <div class="container px-4 py-5" id="how-it-works">
+            <h2 class="pb-2 border-bottom text-center">Como Usar a Plataforma</h2>
+            <div class="row g-4 py-5 row-cols-1 row-cols-md-2 row-cols-lg-4">
+                <div class="col text-center" data-aos="fade-up">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <i class="bi bi-search fs-1 text-primary"></i>
+                            <h3 class="fs-4 mt-3">1. Explore</h3>
+                            <p>Navegue pelo nosso catálogo e escolha um vídeo com um tema que te interesse. O aprendizado é mais eficaz quando o conteúdo é relevante para você.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col text-center">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <i class="bi bi-play-circle-fill fs-1 text-primary"></i>
-                        <h3 class="fs-4 mt-3">2. Mergulhe</h3>
-                        <p>Assista ao vídeo com atenção. Tente compreender o contexto e as ideias principais, mesmo que não entenda todas as palavras. Esta é a etapa da imersão.</p>
+                <div class="col text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <i class="bi bi-play-circle-fill fs-1 text-primary"></i>
+                            <h3 class="fs-4 mt-3">2. Mergulhe</h3>
+                            <p>Assista ao vídeo com atenção. Tente compreender o contexto e as ideias principais, mesmo que não entenda todas as palavras. Esta é a etapa da imersão.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col text-center">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <i class="bi bi-patch-check-fill fs-1 text-primary"></i>
-                        <h3 class="fs-4 mt-3">3. Teste</h3>
-                        <p>Responda ao questionário interativo. Cada pergunta foi elaborada para reforçar o vocabulário e os conceitos apresentados no vídeo.</p>
+                <div class="col text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <i class="bi bi-patch-check-fill fs-1 text-primary"></i>
+                            <h3 class="fs-4 mt-3">3. Teste</h3>
+                            <p>Responda ao questionário interativo. Cada pergunta foi elaborada para reforçar o vocabulário e os conceitos apresentados no vídeo.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col text-center">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <i class="bi bi-graph-up-arrow fs-1 text-primary"></i>
-                        <h3 class="fs-4 mt-3">4. Acompanhe</h3>
-                        <p>Sua pontuação é salva automaticamente! Acompanhe seu progresso, refaça os quizzes e veja sua evolução no aprendizado do idioma.</p>
+                <div class="col text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <i class="bi bi-graph-up-arrow fs-1 text-primary"></i>
+                            <h3 class="fs-4 mt-3">4. Acompanhe</h3>
+                            <p>Sua pontuação é salva automaticamente! Acompanhe seu progresso, refaça os quizzes e veja sua evolução no aprendizado do idioma.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    {% if featured_video %}
-    <div class="container px-4 py-5" id="featured-video">
-        <h2 class="pb-2 border-bottom">Vídeo em Destaque</h2>
-        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
-            <div class="col-12 col-lg-6">
-                <div class="ratio ratio-16x9 shadow-lg rounded">
-                    <iframe src="{{ featured_video.embed_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        {% if featured_video %}
+        <div class="container px-4 py-5" id="featured-video" data-aos="fade-in">
+            <h2 class="pb-2 border-bottom">Vídeo em Destaque</h2>
+            <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+                <div class="col-12 col-lg-6">
+                    <div class="ratio ratio-16x9 shadow-lg rounded">
+                        <iframe src="{{ featured_video.embed_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-6">
-                <h3 class="fw-bold lh-1 mb-3">{{ featured_video.title }}</h3>
-                <p class="lead">{{ featured_video.description|truncatechars:250 }}</p>
-                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                    <a href="{% url 'video_detail' featured_video.pk %}" class="btn btn-primary btn-lg px-4 me-md-2">Assistir e Praticar &raquo;</a>
+                <div class="col-lg-6">
+                    <h3 class="fw-bold lh-1 mb-3">{{ featured_video.title }}</h3>
+                    <p class="lead">{{ featured_video.description|truncatechars:250 }}</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a href="{% url 'video_detail' featured_video.pk %}" class="btn btn-primary btn-lg px-4 me-md-2">Assistir e Praticar &raquo;</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        {% endif %}
     {% endif %}
 
     <div class="container px-4 py-5" id="all-videos">
-        <h2 class="pb-2 border-bottom">Todos os Vídeos</h2>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+        <h2 class="pb-2 border-bottom">{{ page_title|default:"Todos os Vídeos" }}</h2>
+        
+        {% if not is_homepage %}
+            <div class="row mb-4 mt-3">
+                <div class="col-md-6">
+                    <input type="text" id="video-search-input" class="form-control" placeholder="Buscar vídeos pelo título...">
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3" id="video-grid">
             {% for video in videos %}
-                <div class="col">
+                <div class="col" data-aos="fade-up">
                     <div class="card h-100 shadow-sm">
                         <img src="{{ video.thumbnail_url }}" class="card-img-top" alt="Capa do vídeo {{ video.title }}">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ video.title }}</h5>
+                            {% if video.category %}
+                                <p class="mb-2">
+                                    <a href="{% url 'category_view' video.category.name %}" class="badge text-decoration-none bg-secondary">{{ video.category.name }}</a>
+                                </p>
+                            {% endif %}
                             <p class="card-text text-muted flex-grow-1">{{ video.description|truncatechars:100 }}</p>
                             <a href="{% url 'video_detail' video.pk %}" class="btn btn-outline-primary mt-auto">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col">
+                    <p class="text-muted">Nenhum vídeo encontrado.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if is_homepage and videos %}
+            <div class="text-center mt-5">
+                <a href="{% url 'all_videos' %}" class="btn btn-primary btn-lg">Ver Todos os Vídeos</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if random_testimonials %}
+    <div class="container px-4 py-5" id="testimonials">
+        <h2 class="pb-2 border-bottom text-center">O que nossos usuários dizem</h2>
+        <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+            {% for testimonial in random_testimonials %}
+                <div class="col" data-aos="fade-up">
+                    <div class="card h-100 shadow-sm text-center">
+                        <div class="card-body">
+                            <p class="card-text fst-italic">"{{ testimonial.testimonial_text }}"</p>
+                        </div>
+                        <div class="card-footer">
+                            <h5 class="card-title mb-1">{{ testimonial.author_name }}</h5>
+                            <div class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= testimonial.rating %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
     </div>
+    {% endif %}
 {% endblock %}
+
+
+{% if not is_homepage %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('video-search-input');
+    const videoGrid = document.getElementById('video-grid');
+    const videoCards = videoGrid.getElementsByClassName('col');
+
+    searchInput.addEventListener('keyup', function() {
+        const searchTerm = searchInput.value.toLowerCase();
+
+        for (let i = 0; i < videoCards.length; i++) {
+            const card = videoCards[i];
+            const titleElement = card.querySelector('.card-title');
+            if (titleElement) {
+                const title = titleElement.textContent.toLowerCase();
+
+                if (title.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}

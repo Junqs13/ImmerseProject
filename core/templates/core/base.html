@@ -1,7 +1,7 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br" class="h-100">
 <head>
-   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -9,42 +9,67 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
     <title>{% block title %}Immerse{% endblock %}</title>
+
     <style>
-        /* Estilos para o feedback do quiz */
+        /* Estilos para o feedback do quiz (mantidos aqui para simplicidade) */
         .correct { color: #198754; font-weight: bold; }
         .incorrect { color: #DC3545; text-decoration: line-through; }
+        
+        /* Ajuste para a navbar fixa */
+        body {
+            padding-top: 56px;
+        }
     </style>
 </head>
 <body class="d-flex flex-column h-100 bg-body-tertiary">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'video_list' %}"> immersE </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'pagina_sobre' %}">Sobre</a>
-    </li>
-    {% if user.is_authenticated %}
-        <li class="nav-item">
-            <span class="nav-link">Olá, {{ user.username }}!</span>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Sair</a>
-        </li>
-    {% else %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Login</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">Cadastrar</a>
-        </li>
-    {% endif %}
-</ul>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'video_list' %}">Vídeos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pagina_sobre' %}">Sobre</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item me-2">
+                        <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" title="Alternar tema">
+                            <i class="bi bi-moon-stars-fill"></i>
+                        </button>
+                    </li>
+                    
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Olá, {{ user.username }}!
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'profile_view' %}">Meu Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Sair</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Cadastrar</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </nav>
@@ -54,12 +79,75 @@
         {% endblock %}
     </main>
 
-    <footer class="footer mt-auto py-3 bg-dark">
-        <div class="container text-center">
-            <span class="text-white">Immerse © {% now "Y" %} | Seu portal para aprender inglês.</span>
+    <footer class="footer mt-auto py-5 bg-dark text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <h5>Sobre o Immerse</h5>
+                <p class="text-white-50">Uma plataforma dedicada ao aprendizado de inglês por imersão audiovisual, baseada em conteúdo real e interativo. Projeto Integrador UNIVESP © {% now "Y" %}.</p>
+            </div>
+            <div class="col-md-5 offset-md-1 mb-3">
+                <form action="{% url 'newsletter_subscribe' %}" method="post">
+                    {% csrf_token %}
+                    <h5>Inscreva-se na nossa newsletter</h5>
+                    <p class="text-white-50">Receba novidades e dicas de estudo mensalmente.</p>
+                    <div class="d-flex flex-column flex-sm-row w-100 gap-2">
+                        <label for="newsletter1" class="visually-hidden">Endereço de e-mail</label>
+                        <input id="newsletter1" type="email" name="email" class="form-control" placeholder="Endereço de e-mail" required>
+                        <button class="btn btn-primary" type="submit">Inscrever-se</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </footer>
+    </div>
+</footer>
 
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+      AOS.init({
+          duration: 700,
+          once: true,
+      });
+
+      // --- CÓDIGO DO MODO ESCURO ---
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = themeToggle.querySelector('i');
+      const currentTheme = localStorage.getItem('theme');
+      const htmlElement = document.documentElement;
+
+      function applyTheme(theme) {
+          if (theme === 'dark-mode') {
+              htmlElement.classList.add('dark-mode');
+              themeIcon.classList.remove('bi-moon-stars-fill');
+              themeIcon.classList.add('bi-sun-fill');
+          } else {
+              htmlElement.classList.remove('dark-mode');
+              themeIcon.classList.remove('bi-sun-fill');
+              themeIcon.classList.add('bi-moon-stars-fill');
+          }
+      }
+
+      // Ao carregar a página, verifica se já existe um tema salvo
+      if (currentTheme) {
+          applyTheme(currentTheme);
+      }
+
+      // Adiciona o evento de clique no botão
+      themeToggle.addEventListener('click', function() {
+          htmlElement.classList.toggle('dark-mode');
+
+          // Salva a nova preferência no navegador
+          let theme = 'light';
+          if (htmlElement.classList.contains('dark-mode')) {
+              theme = 'dark-mode';
+          }
+          localStorage.setItem('theme', theme);
+
+          // Troca o ícone
+          applyTheme(theme);
+      });
+    </script>
 </body>
 </html>

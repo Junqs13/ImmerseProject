@@ -10,13 +10,18 @@
             <div class="card-body">
                 <p class="mb-3"><a href="{% url 'video_list' %}">&larr; Voltar para a lista de vídeos</a></p>
                 <h1 class="card-title mb-3">{{ video.title }}</h1>
+                {% if video.category %}
+                    <p>
+                        <a href="{% url 'category_view' video.category.name %}" class="badge text-decoration-none bg-primary fs-6">{{ video.category.name }}</a>
+                    </p>
+                {% endif %}
                 <p class="lead text-muted">{{ video.description }}</p>
             </div>
         </div>
 
         <div class="card shadow-sm mb-4">
             <div class="ratio ratio-16x9">
-                <iframe src="{{ video.video_url|slice:'0:24' }}embed/{{ video.video_url|slice:'32:' }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <iframe src="{{ video.embed_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </div>
 
@@ -35,8 +40,9 @@
                         </div>
                     {% else %}
                         <div class="quiz-form">
-                            {% csrf_token %} {% for question in video.questions.all %}
-                                <div class="question mb-4">
+                            {% csrf_token %}
+                            {% for question in video.questions.all %}
+                                <div class="question mb-4" id="question-{{ question.pk }}">
                                     <p><strong>{{ question.question_text }}</strong></p>
                                     <div class="list-group">
                                     {% for choice in question.choices.all %}
@@ -46,9 +52,9 @@
                                         </div>
                                     {% endfor %}
                                     </div>
+
+                                    <div id="explanation-{{ question.pk }}" class="alert alert-info mt-3" style="display: none;"></div>
                                 </div>
-                            {% empty %}
-                                <p class="text-muted">Ainda não há perguntas para este vídeo.</p>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -67,19 +73,15 @@
 
 {% if user.is_authenticated and not user_progress %}
     {{ js_data|json_script:"js-data" }}
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            
-            // ======================================================================
-            // MUDANÇA IMPORTANTE 2: Lendo os dados do bloco JSON seguro
-            // ======================================================================
             const dataElement = document.getElementById('js-data');
             const jsData = JSON.parse(dataElement.textContent);
             const videoId = jsData.videoId;
             const totalQuestions = jsData.totalQuestions;
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            // O resto do script permanece igual...
+            
             const radioButtons = document.querySelectorAll('input[type="radio"]');
             let score = 0;
             let answeredQuestions = 0;
@@ -87,32 +89,55 @@
             radioButtons.forEach(function(radio) {
                 radio.addEventListener('change', function() {
                     const choiceId = this.value;
-                    const questionId = this.name;
-                    const label = this.parentElement.querySelector('label');
+                    const questionElement = this.closest('.question');
+                    const questionId = questionElement.id.replace('question-', '');
 
-                    document.querySelectorAll(`input[name="${questionId}"]`).forEach(input => input.disabled = true);
+                    questionElement.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = true);
                     
                     answeredQuestions++;
 
                     fetch(`/check-answer/?choice_id=${choiceId}`)
                         .then(response => response.json())
                         .then(data => {
-                            if (data.is_correct) {
-                                label.classList.add('correct');
-                                score++;
-                            } else {
-                                label.classList.add('incorrect');
+                            if (data.error) {
+                                console.error(data.error);
+                                return;
                             }
 
+                            const userLabel = this.parentElement.querySelector('label');
+                            const icon = document.createElement('i');
+                            icon.classList.add('bi', 'feedback-icon');
+
+                            if (data.user_choice_is_correct) {
+                                userLabel.classList.add('correct');
+                                score++;
+                                icon.classList.add('bi-check-circle-fill', 'icon-correct');
+                                userLabel.insertAdjacentElement('afterend', icon);
+                            } else {
+                                userLabel.classList.add('incorrect');
+                                icon.classList.add('bi-x-circle-fill', 'icon-incorrect');
+                                userLabel.insertAdjacentElement('afterend', icon);
+
+                                const correctLabel = questionElement.querySelector(`label[for="choice_${data.correct_choice_id}"]`);
+                                if (correctLabel) {
+                                    correctLabel.classList.add('correct');
+                                    const correctIcon = document.createElement('i');
+                                    correctIcon.classList.add('bi', 'feedback-icon', 'bi-check-circle-fill', 'icon-correct');
+                                    correctLabel.insertAdjacentElement('afterend', correctIcon);
+                                }
+                            }
+
+                            const explanationDiv = document.getElementById(`explanation-${questionId}`);
+                            if (data.explanation && explanationDiv) {
+                                explanationDiv.innerHTML = `<strong>Explicação:</strong> ${data.explanation}`;
+                                explanationDiv.style.display = 'block';
+                            }
+                            
                             if (answeredQuestions === totalQuestions) {
                                 alert(`Quiz finalizado! Sua pontuação: ${score} de ${totalQuestions}`);
-                                
                                 fetch('/save-progress/', {
                                     method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRFToken': csrfToken
-                                    },
+                                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
                                     body: JSON.stringify({
                                         video_id: videoId,
                                         score: score,
