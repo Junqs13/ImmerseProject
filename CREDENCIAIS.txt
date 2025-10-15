@@ -1,0 +1,56 @@
+
+## Lista de Credenciais do Projeto "Immerse"
+
+
+
+### Ambiente de Desenvolvimento (Seu Computador)
+
+1. Senha do Banco de Dados Local (XAMPP MySQL)**
+* **Propósito:** Permite que o Django no seu PC se conecte ao banco de dados local.
+* **Onde é Usada:** No arquivo `immerse_project/settings.py` (na sua máquina), no campo `PASSWORD` dentro de `DATABASES`.
+* **Valor Típico:** Geralmente, a senha está em branco (`''`) na instalação padrão do XAMPP.
+---
+
+2. Senha do Superusuário Local (Admin do Django)**
+* **Propósito:** Para você acessar o painel de administração de desenvolvimento em `http://127.0.0.1:8000/admin/`.
+* **Como foi Criada:** Foi a senha que você definiu ao rodar o comando `python manage.py createsuperuser` no seu PC.
+* **Onde é Usada:** Apenas na tela de login do admin local.
+LOG:admin
+S:admin123
+---
+
+
+
+### Ambiente de Produção (Online - GitHub e PythonAnywhere)
+
+3. Senha da sua Conta do GitHub**
+*Propósito: Para fazer login no site do GitHub, gerenciar seu repositório, etc.
+*Onde é Usada:** Apenas no site `github.com`.
+
+**4. Token de Acesso Pessoal do GitHub (PAT)**
+* **Propósito:** Para autenticar comandos do Git (`git push`, `git pull`) a partir de um terminal.
+* **Como foi Criado:** Gerado nas "Developer settings" do seu perfil no GitHub.
+* **Onde é Usada:** É o que você **cola** no terminal quando ele pede a "Password" para uma operação do Git. **Não é a mesma senha da sua conta.**
+
+---
+
+**5. Senha da sua Conta do PythonAnywhere**
+* **Propósito:** Para fazer login no site do PythonAnywhere e gerenciar seu site, consoles e banco de dados.
+* **Onde é Usada:** Apenas no site `pythonanywhere.com`.
+
+---
+6. Senha do Banco de Dados de Produção (PythonAnywhere MySQL)**
+* Propósito: Permite que a sua aplicação Django **online** se conecte ao banco de dados **online**.
+*Como foi Criada: Foi a senha que você definiu na aba "Databases" do PythonAnywhere.
+* Onde é Usada: No arquivo `immerse_project/settings.py` **que está no servidor do PythonAnywhere**, no campo `PASSWORD`.
+
+S:@A127220b@
+
+---
+7. Senha do Superusuário de Produção (Admin Online)**
+*Propósito: Para você acessar o painel de administração do seu site público (ex: `https://junqs13.pythonanywhere.com/admin/`).
+
+*Onde é Usada: Apenas na tela de login do admin online. É uma conta separada da sua conta de admin local.
+LOG: admin
+S: A97454911b
+---
