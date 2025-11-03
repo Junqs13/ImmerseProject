@@ -1,19 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 
-# Modelo para os Vídeos
+
+# -----------------------------
+# Modelo para Categorias
+# -----------------------------
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Nome")
 
     class Meta:
-        # Corrige o plural de "Categoria" no painel de admin
         verbose_name = "Categoria"
         verbose_name_plural = "Categorias"
 
     def __str__(self):
         return self.name
-# core/models.py
+
+
+# -----------------------------
+# Modelo para Vídeos
+# -----------------------------
 class Video(models.Model):
     title = models.CharField(max_length=200, verbose_name="Título")
     description = models.TextField(verbose_name="Descrição")
@@ -24,6 +31,7 @@ class Video(models.Model):
     def __str__(self):
         return self.title
 
+    # --- Extrai o ID do vídeo ---
     def get_video_id(self):
         """Extrai o ID do vídeo de diferentes formatos de URL do YouTube."""
         if 'watch?v=' in self.video_url:
@@ -34,6 +42,7 @@ class Video(models.Model):
             return self.video_url.split('/embed/')[-1].split('?')[0]
         return None
 
+    # --- Retorna a URL de incorporação (embed) ---
     @property
     def embed_url(self):
         video_id = self.get_video_id()
@@ -41,12 +50,30 @@ class Video(models.Model):
             return f'https://www.youtube.com/embed/{video_id}'
         return self.video_url
 
+    # --- Retorna a thumbnail do vídeo ---
     @property
     def thumbnail_url(self):
         video_id = self.get_video_id()
         if video_id:
             return f'https://img.youtube.com/vi/{video_id}/hqdefault.jpg'
-        return '' # Retorna vazio se não conseguir extrair o ID
+        return ''
+
+    # --- Validação: garante que o link é do YouTube ---
+    def clean(self):
+        if "youtube.com" not in self.video_url and "youtu.be" not in self.video_url:
+            raise ValidationError("Insira um link válido do YouTube.")
+
+    # --- Ao salvar, normaliza a URL para o formato embed ---
+    def save(self, *args, **kwargs):
+        video_id = self.get_video_id()
+        if video_id:
+            self.video_url = f'https://www.youtube.com/embed/{video_id}'
+        super().save(*args, **kwargs)
+
+
+# -----------------------------
+# Modelo para Perguntas
+# -----------------------------
 class Question(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="questions", verbose_name="Vídeo")
     question_text = models.CharField(max_length=255, verbose_name="Texto da Pergunta")
@@ -55,7 +82,10 @@ class Question(models.Model):
     def __str__(self):
         return self.question_text
 
-# Modelo para as Alternativas de cada pergunta
+
+# -----------------------------
+# Modelo para Alternativas
+# -----------------------------
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices", verbose_name="Pergunta")
     choice_text = models.CharField(max_length=100, verbose_name="Texto da Alternativa")
@@ -64,21 +94,26 @@ class Choice(models.Model):
     def __str__(self):
         return self.choice_text
 
-# Modelo para o Progresso do Usuário
+
+# -----------------------------
+# Modelo para Progresso do Usuário
+# -----------------------------
 class UserProgress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
-    # Usamos CharField para armazenar a pontuação no formato "X/Y"
     score = models.CharField(max_length=10)
     completed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Garante que um usuário só tenha uma entrada de pontuação por vídeo
         unique_together = ('user', 'video')
 
     def __str__(self):
         return f'{self.user.username} - {self.video.title} - Pontuação: {self.score}'
 
+
+# -----------------------------
+# Modelo para Avaliações (Depoimentos)
+# -----------------------------
 class Testimonial(models.Model):
     author_name = models.CharField(max_length=100, verbose_name="Nome do Autor")
     testimonial_text = models.TextField(verbose_name="Texto da Avaliação")
@@ -94,8 +129,11 @@ class Testimonial(models.Model):
 
     def __str__(self):
         return f'Avaliação de {self.author_name}'
-    
 
+
+# -----------------------------
+# Modelo para Newsletter
+# -----------------------------
 class NewsletterSubscriber(models.Model):
     email = models.EmailField(unique=True, verbose_name="E-mail")
     subscribed_at = models.DateTimeField(auto_now_add=True, verbose_name="Data de Inscrição")
