@@ -63,11 +63,16 @@ def video_detail(request, pk):
         except UserProgress.DoesNotExist:
             user_progress = None
     
-    # Criamos o dicionário com os dados aqui na view
+    # --- MUDANÇA AQUI ---
+    # Enviamos os dois IDs para o JavaScript:
+    # 1. O ID do YouTube (para o player)
+    # 2. O ID do Banco de Dados (para salvar o progresso)
     js_data_dict = {
-        'videoId': video.pk,
+        'videoId_youtube': video.get_video_id(), # ID do YouTube (ex: 'iG9CE55wbtY')
+        'videoId_db': video.pk,                # ID do Banco de Dados (ex: 1, 2, 3)
         'totalQuestions': video.questions.count(),
     }
+    # --- FIM DA MUDANÇA ---
 
     context = {
         'video': video,

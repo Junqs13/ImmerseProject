@@ -59,7 +59,7 @@
             <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
                 <div class="col-12 col-lg-6">
                     <div class="ratio ratio-16x9 shadow-lg rounded">
-                        <iframe src="{{ featured_video.embed_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div id="featured-player" data-video-id="{{ featured_video.get_video_id }}"></div>
                     </div>
                 </div>
                 <div class="col-lg-6">

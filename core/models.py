@@ -3,6 +3,80 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 
+# --- NOVOS IMPORTS ---
+from django.conf import settings
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+import re # Import para extrair o ID
+# ---------------------
+
+
+# -----------------------------
+# FUNÇÃO HELPER (Fora da classe)
+# -----------------------------
+
+def get_video_id_from_url(url):
+    """Extrai o ID do vídeo de diferentes formatos de URL do YouTube."""
+    if 'watch?v=' in url:
+        return url.split('v=')[-1].split('&')[0]
+    elif 'youtu.be/' in url:
+        return url.split('/')[-1].split('?')[0]
+    elif '/embed/' in url:
+        return url.split('/embed/')[-1].split('?')[0]
+    return None
+
+def check_video_embeddable(video_id):
+    """
+    Verifica se um vídeo do YouTube pode ser incorporado usando a API.
+    Checa tanto o status 'embeddable' quanto restrições de região.
+    """
+    if not settings.YOUTUBE_API_KEY:
+        raise ValidationError("A YOUTUBE_API_KEY não está configurada no settings.py")
+        
+    try:
+        youtube = build('youtube', 'v3', developerKey=settings.YOUTUBE_API_KEY)
+        request = youtube.videos().list(
+            # AGORA PEDIMOS 2 PARTES: status E contentDetails
+            part="status,contentDetails",
+            id=video_id
+        )
+        response = request.execute()
+
+        if not response.get('items'):
+            # Vídeo não encontrado
+            raise ValidationError(f"Vídeo com ID '{video_id}' não foi encontrado no YouTube.")
+            
+        item = response['items'][0]
+        status = item.get('status', {})
+        details = item.get('contentDetails', {})
+
+        # --- CHECAGEM 1: A mais óbvia (Erro 153) ---
+        if not status.get('embeddable', False):
+            return False, "Incorporação desativada pelo proprietário"
+
+        # --- CHECAGEM 2: Bloqueio de Região ---
+        restriction = details.get('regionRestriction')
+        if restriction:
+            # Se 'allowed' existe, o vídeo SÓ pode ser visto nesses países.
+            # Se 'BR' (Brasil) não estiver na lista, bloqueamos.
+            if 'allowed' in restriction and 'BR' not in restriction['allowed']:
+                return False, f"Não permitido para a região BR (só permitido em: {restriction['allowed']})"
+            
+            # Se 'blocked' existe, o vídeo NÃO pode ser visto nesses países.
+            # Se 'BR' (Brasil) estiver na lista, bloqueamos.
+            if 'blocked' in restriction and 'BR' in restriction['blocked']:
+                return False, f"Bloqueado para a região BR"
+
+        # Se passou nas duas checagens, está liberado!
+        return True, "Permitido"
+
+    except HttpError as e:
+        # Trata erros de API (ex: cota excedida, API desativada)
+        raise ValidationError(f"Erro ao verificar vídeo na API do YouTube: {e}")
+    except Exception as e:
+        # Outros erros
+        raise ValidationError(f"Erro inesperado na verificação do vídeo: {e}")
+
 
 # -----------------------------
 # Modelo para Categorias
@@ -19,7 +93,7 @@ class Category(models.Model):
 
 
 # -----------------------------
-# Modelo para Vídeos
+# Modelo para Vídeos (COM MUDANÇAS)
 # -----------------------------
 class Video(models.Model):
     title = models.CharField(max_length=200, verbose_name="Título")
@@ -31,18 +105,10 @@ class Video(models.Model):
     def __str__(self):
         return self.title
 
-    # --- Extrai o ID do vídeo ---
     def get_video_id(self):
-        """Extrai o ID do vídeo de diferentes formatos de URL do YouTube."""
-        if 'watch?v=' in self.video_url:
-            return self.video_url.split('v=')[-1].split('&')[0]
-        elif 'youtu.be/' in self.video_url:
-            return self.video_url.split('/')[-1].split('?')[0]
-        elif '/embed/' in self.video_url:
-            return self.video_url.split('/embed/')[-1].split('?')[0]
-        return None
+        # Usa a função helper que criamos
+        return get_video_id_from_url(self.video_url)
 
-    # --- Retorna a URL de incorporação (embed) ---
     @property
     def embed_url(self):
         video_id = self.get_video_id()
@@ -50,7 +116,6 @@ class Video(models.Model):
             return f'https://www.youtube.com/embed/{video_id}'
         return self.video_url
 
-    # --- Retorna a thumbnail do vídeo ---
     @property
     def thumbnail_url(self):
         video_id = self.get_video_id()
@@ -58,21 +123,30 @@ class Video(models.Model):
             return f'https://img.youtube.com/vi/{video_id}/hqdefault.jpg'
         return ''
 
-    # --- Validação: garante que o link é do YouTube ---
     def clean(self):
         if "youtube.com" not in self.video_url and "youtu.be" not in self.video_url:
             raise ValidationError("Insira um link válido do YouTube.")
 
-    # --- Ao salvar, normaliza a URL para o formato embed ---
     def save(self, *args, **kwargs):
         video_id = self.get_video_id()
-        if video_id:
-            self.video_url = f'https://www.youtube.com/embed/{video_id}'
+        
+        if not video_id:
+             raise ValidationError("Não foi possível extrair o ID do vídeo da URL.")
+
+        # Só verifica na criação (quando self.pk é None)
+        if not self.pk:
+            is_embeddable, reason = check_video_embeddable(video_id)
+            if not is_embeddable:
+                raise ValidationError(f"O vídeo '{self.title}' (ID: {video_id}) não pode ser salvo. Motivo: {reason}")
+        
+        # Normaliza a URL
+        self.video_url = f'https://www.youtube.com/embed/{video_id}'
         super().save(*args, **kwargs)
 
 
 # -----------------------------
-# Modelo para Perguntas
+# Modelos (Perguntas, Alternativas, Progresso, etc.)
+# ... O RESTO DO ARQUIVO CONTINUA EXATAMENTE IGUAL ...
 # -----------------------------
 class Question(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="questions", verbose_name="Vídeo")
@@ -82,10 +156,6 @@ class Question(models.Model):
     def __str__(self):
         return self.question_text
 
-
-# -----------------------------
-# Modelo para Alternativas
-# -----------------------------
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices", verbose_name="Pergunta")
     choice_text = models.CharField(max_length=100, verbose_name="Texto da Alternativa")
@@ -94,10 +164,6 @@ class Choice(models.Model):
     def __str__(self):
         return self.choice_text
 
-
-# -----------------------------
-# Modelo para Progresso do Usuário
-# -----------------------------
 class UserProgress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
@@ -110,10 +176,6 @@ class UserProgress(models.Model):
     def __str__(self):
         return f'{self.user.username} - {self.video.title} - Pontuação: {self.score}'
 
-
-# -----------------------------
-# Modelo para Avaliações (Depoimentos)
-# -----------------------------
 class Testimonial(models.Model):
     author_name = models.CharField(max_length=100, verbose_name="Nome do Autor")
     testimonial_text = models.TextField(verbose_name="Texto da Avaliação")
@@ -130,10 +192,6 @@ class Testimonial(models.Model):
     def __str__(self):
         return f'Avaliação de {self.author_name}'
 
-
-# -----------------------------
-# Modelo para Newsletter
-# -----------------------------
 class NewsletterSubscriber(models.Model):
     email = models.EmailField(unique=True, verbose_name="E-mail")
     subscribed_at = models.DateTimeField(auto_now_add=True, verbose_name="Data de Inscrição")

@@ -21,10 +21,9 @@
 
         <div class="card shadow-sm mb-4">
             <div class="ratio ratio-16x9">
-                <iframe src="{{ video.embed_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <div id="player" data-video-id="{{ video.get_video_id }}"></div>
             </div>
         </div>
-
         <div class="card shadow-sm mb-4">
             <div class="card-header">
                 <h2 class="h4 mb-0">Questionário</h2>
@@ -78,8 +77,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             const dataElement = document.getElementById('js-data');
             const jsData = JSON.parse(dataElement.textContent);
-            const videoId = jsData.videoId;
+            
+            // Variáveis atualizadas com base no 'views.py'
+            const videoId_db = jsData.videoId_db; // ID do banco (ex: 1)
+            const videoId_youtube = jsData.videoId_youtube; // ID do YouTube (ex: 'iG9CE55wbtY')
             const totalQuestions = jsData.totalQuestions;
+            
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             
             const radioButtons = document.querySelectorAll('input[type="radio"]');
@@ -139,7 +142,7 @@
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
                                     body: JSON.stringify({
-                                        video_id: videoId,
+                                        video_id: videoId_db, // <-- MUDANÇA AQUI (usando o ID do banco)
                                         score: score,
                                         total_questions: totalQuestions
                                     })
@@ -155,5 +158,5 @@
             });
         });
     </script>
-{% endif %}
+    {% endif %}
 {% endblock %}

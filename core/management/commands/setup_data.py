@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from core.models import Category, Video, Question, Choice, Testimonial
+from django.core.exceptions import ValidationError  # <-- IMPORTAR ISSO
 
 class Command(BaseCommand):
     help = 'Cria e atualiza todo o conteúdo base do site: Categorias, Vídeos, Quizzes e Avaliações, sem sobrescrever URLs existentes.'
@@ -91,33 +92,46 @@ class Command(BaseCommand):
         for data in content_data:
             category, _ = Category.objects.get_or_create(name=data['category'])
             
-            video, created = Video.objects.get_or_create(
-                title=data['video_title'],
-                defaults={
-                    'description': data['video_desc'],
-                    'video_url': data['video_url'],
-                    'category': category
-                }
-            )
+            # --- INÍCIO DA MODIFICAÇÃO ---
+            try:
+                # 1. Verifica se o vídeo já existe pelo título
+                video_obj = Video.objects.filter(title=data['video_title']).first()
 
-            if created:
-                self.stdout.write(self.style.SUCCESS(f'Vídeo "{video.title}" criado.'))
-            else:
-                self.stdout.write(self.style.WARNING(f'Vídeo "{video.title}" já existe. Verificando/adicionando quiz...'))
-            
-            if data.get('questions'):
-                for q_data in data['questions']:
-                    question, q_created = Question.objects.update_or_create(
-                        video=video,
-                        question_text=q_data['text'],
-                        defaults={'explanation': q_data.get('explanation', '')}
+                if not video_obj:
+                    # 2. Se não existe, cria uma nova instância
+                    video = Video(
+                        title=data['video_title'],
+                        description=data['video_desc'],
+                        video_url=data['video_url'],
+                        category=category
                     )
-                    
-                    if q_created and q_data.get('choices'):
-                        for c_data in q_data['choices']:
-                            Choice.objects.create(question=question, choice_text=c_data['text'], is_correct=c_data['correct'])
+                    # 3. Tenta salvar. O models.py fará a validação da API aqui.
+                    video.save() 
+                    self.stdout.write(self.style.SUCCESS(f'Vídeo "{video.title}" verificado e criado.'))
+                else:
+                    # 4. Se já existe, apenas usa a referência dele
+                    video = video_obj
+                    self.stdout.write(self.style.WARNING(f'Vídeo "{video.title}" já existe. Verificando/adicionando quiz...'))
+
+                # 5. O código do quiz só roda se o vídeo foi criado com sucesso ou já existia
+                if data.get('questions'):
+                    for q_data in data['questions']:
+                        question, q_created = Question.objects.update_or_create(
+                            video=video,
+                            question_text=q_data['text'],
+                            defaults={'explanation': q_data.get('explanation', '')}
+                        )
+                        
+                        if q_created and q_data.get('choices'):
+                            for c_data in q_data['choices']:
+                                Choice.objects.create(question=question, choice_text=c_data['text'], is_correct=c_data['correct'])
+            
+            except ValidationError as e:
+                # 6. Se o video.save() falhar, captura o erro e informa no console
+                self.stdout.write(self.style.ERROR(f'--- VÍDEO IGNORADO --- "{data["video_title"]}". Motivo: {e}'))
+            # --- FIM DA MODIFICAÇÃO ---
         
-        self.stdout.write(self.style.SUCCESS('Vídeos e quizzes verificados/criados.'))
+        self.stdout.write(self.style.SUCCESS('Processamento de vídeos e quizzes concluído.'))
 
         # --- DADOS DAS AVALIAÇÕES ---
         self.stdout.write(self.style.NOTICE('Limpando e recriando avaliações...'))

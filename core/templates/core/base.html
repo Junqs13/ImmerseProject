@@ -141,5 +141,72 @@
           applyTheme(theme);
       });
     </script>
-</body>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        /**
+         * Esta função é chamada automaticamente pela API do YouTube
+         * assim que o script acima é carregado.
+         */
+        function onYouTubeIframeAPIReady() {
+            // Tenta encontrar o player na página de detalhe do vídeo
+            var detailPlayerDiv = document.getElementById('player');
+            if (detailPlayerDiv) {
+                var videoId = detailPlayerDiv.getAttribute('data-video-id');
+                initPlayer('player', videoId);
+            }
+            
+            // Tenta encontrar o player de "Vídeo em Destaque" na homepage
+            var featuredPlayerDiv = document.getElementById('featured-player');
+            if (featuredPlayerDiv) {
+                var videoId = featuredPlayerDiv.getAttribute('data-video-id');
+                initPlayer('featured-player', videoId);
+            }
+        }
+
+        /**
+         * Função helper que cria uma instância do player.
+         */
+        function initPlayer(elementId, videoId) {
+            return new YT.Player(elementId, {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: { 
+                    'playsinline': 1,
+                    'origin': window.location.origin 
+                },
+                events: {
+                    'onError': onPlayerError // Define nossa função de captura de erro
+                }
+            });
+        }
+
+        /**
+         * Esta é a função mais importante.
+         * Ela é chamada se o YouTube não conseguir tocar o vídeo.
+         */
+        function onPlayerError(event) {
+            var playerElement = event.target.getIframe();
+            var videoId = "";
+            try {
+                // Tenta pegar o ID do vídeo a partir da URL do iframe
+                videoId = playerElement.src.split('/embed/')[1].split('?')[0];
+            } catch(e) {}
+
+            // Erros 101, 150 e 153 são todos "Incorporação desativada"
+            if ([101, 150, 153].includes(event.data)) {
+                // Substitui o player quebrado por uma mensagem de erro amigável
+                playerElement.parentElement.innerHTML = `
+                    <div class="alert alert-danger h-100 d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 250px;">
+                        <h4 class="alert-heading">Vídeo Indisponível (Erro 153)</h4>
+                        <p class="mb-2">O proprietário deste vídeo desativou a reprodução em sites externos.</p>
+                        ${videoId ? `<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" class="btn btn-danger btn-sm">Assistir no YouTube</a>` : ''}
+                    </div>
+                `;
+            }
+        }
+    </script>
+    </body>
 </html>
